@@ -95,7 +95,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>4.0.0</version>
+          <version>3.3.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
