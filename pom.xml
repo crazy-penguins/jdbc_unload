@@ -6,7 +6,7 @@
 
   <groupId>ewoks.jdbc_unload</groupId>
   <artifactId>jdbc_unload</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
 
   <name>jdbc_unload</name>
   <url>https://fleeting.ewoks.se</url>
@@ -53,6 +53,11 @@
       <groupId>com.oracle.ojdbc</groupId>
       <artifactId>ojdbc8</artifactId>
       <version>19.3.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.jt400</groupId>
+      <artifactId>jt400</artifactId>
+      <version>10.7</version>
     </dependency>
   </dependencies>
 
