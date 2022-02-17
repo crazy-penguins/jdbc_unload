@@ -17,6 +17,8 @@ package com.opencsv;
  */
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -33,7 +35,7 @@ public class CSVWriter implements Closeable {
     /**
      * The character used for escaping quotes.
      */
-    public static char DEFAULT_ESCAPE_CHARACTER = '"';
+    public static char DEFAULT_ESCAPE_CHARACTER = '\\';
     /**
      * The quote constant to use when you wish to suppress all quoting.
      */
@@ -73,11 +75,11 @@ public class CSVWriter implements Closeable {
     }
 
     public CSVWriter(String fileName, char separator, char quotechar, char escapechar, String lineEnd) throws IOException {
-        this(new FileWriter(fileName), separator, quotechar, escapechar, lineEnd);
+        this(new FileWriter(fileName, StandardCharsets.UTF_8), separator, quotechar, escapechar, lineEnd);
         this.CSVFileName = fileName;
         String extensionName = "csv";
         if (quotechar == '\'' && escapechar == quotechar) extensionName = "sql";
-        buffer = new FileBuffer(INITIAL_BUFFER_SIZE, fileName, extensionName);
+        buffer = new FileBuffer(INITIAL_BUFFER_SIZE, fileName, extensionName, "UTF-8");
         logWriter = new PrintWriter(buffer.file.getParentFile().getAbsolutePath() + File.separator + buffer.fileName + ".log");
         //logWriter = new PrintWriter(System.err);
     }
@@ -360,6 +362,7 @@ public class CSVWriter implements Closeable {
             char nextChar = nextElement.charAt(j);
             if (escapechar != NO_ESCAPE_CHARACTER && (nextChar == quotechar || nextChar == escapechar)) {
                 add(escapechar).add(nextChar);
+
             } else {
                 add(nextChar);
             }

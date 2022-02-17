@@ -68,7 +68,12 @@ public class FileBuffer implements Closeable {
                 buffer = ByteBuffer.allocateDirect(bufferSize + BUFFER_RESERVED_SIZE);
                 buffer.order(ByteOrder.nativeOrder());
             }
-            if (charset != null) this.charset = Charset.forName(charset);
+            if (charset != null) {
+                this.charset = Charset.forName(charset);
+            }
+            else {
+                this.charset = Charset.defaultCharset();
+            }
         } catch (IOException e) {
             close();
             throw e;
@@ -113,13 +118,17 @@ public class FileBuffer implements Closeable {
 
     public FileBuffer write(char c) throws IOException {
         if (bList == null) return this;
-        bList[bLen++] = (byte) c;
-        fill(false);
-        return this;
+        int b = (int)c;
+        if (b < 128) {
+            bList[bLen++] = (byte) c;
+            fill(false);
+            return this;
+        }
+        return this.write(Character.toString(c));
     }
 
     public FileBuffer write(String str) throws IOException {
-        return write(str.getBytes());
+        return write(str.getBytes(charset));
     }
 
     public boolean flush(boolean force) throws IOException {
