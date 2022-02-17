@@ -18,7 +18,7 @@ public class SqlServerUnload extends Unload {
         String databaseName = args[3];
         String inFile = args[4];
         String outFile = args[5];
-        Class.forName("com.microsoft.sqlserver.jdbc.SqlServerDriver");
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         //step2 create  the connection object
         String st = String.format(
             "jdbc:sqlserver://%s:1433;databaseName=%s",
