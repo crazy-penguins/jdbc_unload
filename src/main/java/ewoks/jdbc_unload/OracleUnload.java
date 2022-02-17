@@ -30,7 +30,7 @@ public class OracleUnload extends Unload {
         Properties props = new Properties();
         props.setProperty("user", username);
         props.setProperty("password", password);
-        props.setProperty("timezoneAsRegion", "false");
+        props.setProperty("oracle.jdbc.timezoneAsRegion", "false");
         Connection conn = DriverManager.getConnection(st, props);
         String query = Files.readString(Path.of(inFile));
         OracleUnload.unload(conn, query, outFile);

@@ -345,15 +345,9 @@ public class ResultSetHelperService implements Closeable {
             case "Long":
                 return ((Number) o).longValue();
             case "BigInteger":
-                d = ((Number) o).doubleValue();
-                if (o.toString().equals(new BigInteger(String.valueOf((long) d)))) return (long) d;
-                return o;
+                return ((BigInteger)o).toString();
             case "BigDecimal":
-                d = ((Number) o).doubleValue();
-                final long l = (long) d;
-                if (d == l && o.toString().equals(BigInteger.valueOf(l))) return l;
-                if (o.toString().equals(BigDecimal.valueOf(d).toString())) return d;
-                return o.toString();
+                return ((BigDecimal)o).toPlainString();
             case "date":
             case "time":
                 str = handleDate((Date) o, dateFormatString);
