@@ -308,8 +308,8 @@ public class ResultSetHelperService implements Closeable {
 
     protected String handleTimestampTZ(Object timestamp, String timestampFormatString) {
         if (timeTZFormat == null) {
-            timeTZFormat = DateTimeFormatter.ofPattern(timestampFormatString + " X");
-            TimeTZFormat1 = new SimpleDateFormat(timestampFormatString + " X");
+            timeTZFormat = DateTimeFormatter.ofPattern(timestampFormatString + "XXX");
+            TimeTZFormat1 = new SimpleDateFormat(timestampFormatString + "XXX");
         }
         if (timestamp == null) return null;
         if (timestamp instanceof OffsetDateTime) return ((OffsetDateTime) timestamp).format(timeTZFormat);
