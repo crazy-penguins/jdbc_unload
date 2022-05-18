@@ -6,7 +6,7 @@
 
   <groupId>ewoks.jdbc_unload</groupId>
   <artifactId>jdbc_unload</artifactId>
-  <version>1.4</version>
+  <version>1.5</version>
 
   <name>jdbc_unload</name>
   <url>https://fleeting.ewoks.se</url>
@@ -58,6 +58,11 @@
       <groupId>net.sf.jt400</groupId>
       <artifactId>jt400</artifactId>
       <version>10.7</version>
+    </dependency>
+    <dependency>
+        <groupId>org.yaml</groupId>
+        <artifactId>snakeyaml</artifactId>
+        <version>1.30</version>
     </dependency>
   </dependencies>
 

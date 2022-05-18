@@ -45,7 +45,13 @@ public class Unload {
         //step4 execute query
         ResultSet rs;
         rs = stmt.executeQuery(query);
+        int result = Unload.to_csv(rs, outFile);
+        System.out.println("Result: " + (result - 1));
         //step5 close the connection object
+        conn.close();
+    }
+
+    public static int to_csv(ResultSet rs, String outFile) throws SQLException, IOException, Exception {
         boolean async = true;
         try (CSVWriter writer = new CSVWriter(outFile)) {
             //Define fetch size(default as 30000 rows), higher to be faster performance but takes more memory
@@ -53,10 +59,7 @@ public class Unload {
             //Define MAX extract rows, -1 means unlimited.
             ResultSetHelperService.MAX_FETCH_ROWS = -1;
             writer.setAsyncMode(async);
-            int result = writer.writeAll(rs, true);
-            //return result - 1;
-            System.out.println("Result: " + (result - 1));
+            return writer.writeAll(rs, true);
         }
-        conn.close();
     }
 }
