@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 
-public class Db2iSchemaUnload extends Unload {
+public class Db2iSchemaUnload extends Db2iUnload {
     static final String usage = "Db2iSchemaUnload [username] [password] [host]"
             + " [schema] [tableName] [outFile]";
 
@@ -21,13 +21,11 @@ public class Db2iSchemaUnload extends Unload {
         String schema = args[3];
         String table = args[4];
         String outFile = args[5];
-        Class.forName("com.ibm.as400.access.AS400JDBCDriver");
-        //step2 create  the connection object
-        String st = String.format("jdbc:as400://%s", host);
-        Connection conn = DriverManager.getConnection(st, username, password);
-        ResultSet columns = conn.getMetaData().getColumns(null, schema, table, null);
-        Db2iSchemaUnload.to_csv(columns, outFile);
-        conn.close();
+        try (Connection conn = Db2iSchemaUnload.connect(host, username, password)) {
+            try (ResultSet columns = conn.getMetaData().getColumns(null, schema, table, null)) {
+                Db2iSchemaUnload.to_csv(columns, outFile);
+            }
+        }
     }
 }
 

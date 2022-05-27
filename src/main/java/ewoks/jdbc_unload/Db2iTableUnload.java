@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-public class Db2iTableUnload extends Unload {
+public class Db2iTableUnload extends Db2iUnload {
     static final String usage = "Db2iTableUnload [username] [password] [host]"
             + " [tableName] [outFile]";
 
@@ -23,11 +23,10 @@ public class Db2iTableUnload extends Unload {
         String outFile = args[4];
         Class.forName("com.ibm.as400.access.AS400JDBCDriver");
         //step2 create  the connection object
-        String st = String.format("jdbc:as400://%s", host);
-        Connection conn = DriverManager.getConnection(st, username, password);
         String query = String.format("select * from %s", table);
-        Db2iTableUnload.unload(conn, query, outFile);
-        conn.close();
+        try (Connection conn = Db2iTableUnload.connect(host, username, password)) {
+            Db2iTableUnload.unload(conn, query, outFile);
+        }
     }
 }
 

@@ -4,10 +4,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class Db2iUnload extends Unload {
     static final String usage = "Db2iUnload [username] [password] [host]"
             + " [inFile] [outFile]";
+
+    public static Connection connect(String host, String username, String password) throws ClassNotFoundException, SQLException {
+        Class.forName("com.ibm.as400.access.AS400JDBCDriver");
+        String st = String.format("jdbc:as400://%s", host);
+        return DriverManager.getConnection(st, username, password);
+    }
 
     public static void main(String[] args) throws Exception {
         // write your code here
@@ -21,13 +28,10 @@ public class Db2iUnload extends Unload {
         String host = args[2];
         String inFile = args[3];
         String outFile = args[4];
-        Class.forName("com.ibm.as400.access.AS400JDBCDriver");
-        //step2 create  the connection object
-        String st = String.format("jdbc:as400://%s", host);
-        Connection conn = DriverManager.getConnection(st, username, password);
         String query = Files.readString(Path.of(inFile));
-        Db2iUnload.unload(conn, query, outFile);
-        conn.close();
+        try (Connection conn = Db2iUnload.connect(host, username, password)) {
+            Db2iUnload.unload(conn, query, outFile);
+        }
     }
 }
 
