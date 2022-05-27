@@ -10,13 +10,22 @@ public class NetsuiteUnload extends Unload {
     static final String usage =
               "JDBC_UNLOAD_USERNAME=username JDBC_UNLOAD_PASSWORD=password"
             + "NetsuiteUnload [account] [roleId] [inFile] [outFile]";
+    String account = null;
+    String roleId = null;
 
-    public static Connection connect(String username, String password, String account, String roleId) throws ClassNotFoundException, SQLException {
+    public NetsuiteUnload(String username, String password, String account, String roleId) {
+        this.username = username;
+        this.password = password;
+        this.account = account;
+        this.roleId = roleId;
+        this.dbType = "netsuite";
+    }
+
+    @Override
+    public String getConnectionString() {
         String host = String.format("%s.connect.api.netsuite.com", account);
         String t = "jdbc:ns://%s:1708;ServerDataSource=NetSuite2.com;encrypted=1;CustomProperties=(AccountID=%s;RoleID=%s);NegotiateSSLClose=false";
-        String st = String.format(t, host, account, roleId);
-        Class.forName("com.netsuite.jdbc.openaccess.OpenAccessDriver");
-        return DriverManager.getConnection(st, username, password);
+        return String.format(t, host, account, roleId);
     }
 
     public static void main(String[] args) throws Exception {
@@ -32,9 +41,8 @@ public class NetsuiteUnload extends Unload {
         String roleId = args[1];
         String inFile = args[2];
         String outFile = args[3];
-        String query = Files.readString(Path.of(inFile));
-        try (Connection conn = NetsuiteUnload.connect(username, password, account, roleId)) {
-            NetsuiteUnload.unload(conn, query, outFile);
-        }
+        String query = Unload.fileContents(inFile);
+        NetsuiteUnload unload = new NetsuiteUnload(username, password, account, roleId);
+        unload.unload(query, outFile);
     }
 }

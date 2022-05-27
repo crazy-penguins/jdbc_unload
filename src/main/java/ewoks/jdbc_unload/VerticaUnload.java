@@ -9,6 +9,21 @@ public class VerticaUnload extends Unload {
     static final String usage = "VerticaUnload [username] [password] [host]"
             + " [databaseName] [inFile] [outFile]";
 
+    String databaseName;
+
+    public VerticaUnload(String username, String password, String host, String databaseName) {
+        this.username = username;
+        this.password = password;
+        this.host = host;
+        this.databaseName = databaseName;
+        this.dbType = "vertica";
+    }
+
+    @Override
+    public String getConnectionString() {
+        return String.format("jdbc:vertica://%s:5433/%s", host, databaseName);
+    }
+
     public static void main(String[] args) throws Exception {
         // write your code here
         //step1 load the driver class
@@ -22,12 +37,8 @@ public class VerticaUnload extends Unload {
         String databaseName = args[3];
         String inFile = args[4];
         String outFile = args[5];
-        Class.forName("com.vertica.jdbc.Driver");
-        //step2 create  the connection object
-        String st = String.format("jdbc:vertica://%s:5433/%s", host, databaseName);
-        Connection conn = DriverManager.getConnection(st, username, password);
-        String query = Files.readString(Path.of(inFile));
-        VerticaUnload.unload(conn, query, outFile);
-        conn.close();
+        String query = Unload.fileContents(inFile);
+        VerticaUnload unload = new VerticaUnload(username, password, host, databaseName);
+        unload.unload(query, outFile);
     }
 }

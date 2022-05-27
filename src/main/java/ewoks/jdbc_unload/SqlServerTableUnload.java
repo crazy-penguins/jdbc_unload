@@ -1,16 +1,16 @@
 package ewoks.jdbc_unload;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 
-public class SqlServerTableUnload extends Unload {
+public class SqlServerTableUnload extends SqlServerUnload {
     static final String usage = "SqlServerTableUnload [username] [password] [host]"
             + " [databaseName] [table] [outFile]";
 
+    public SqlServerTableUnload(String username, String password, String host, String databaseName) {
+        super(username, password, host, databaseName);
+    }
+
     public static void main(String[] args) throws Exception {
-        // write your code here
-        //step1 load the driver class
-        if (args.length < 6) {
+        if (args.length != 6 && args.length != 7) {
             System.out.println(SqlServerTableUnload.usage);
             System.exit(0);
         }
@@ -20,14 +20,11 @@ public class SqlServerTableUnload extends Unload {
         String databaseName = args[3];
         String table = args[4];
         String outFile = args[5];
-        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        //step2 create  the connection object
-        String st = String.format(
-            "jdbc:sqlserver://%s:1433;databaseName=%s",
-            host, databaseName);
-        Connection conn = DriverManager.getConnection(st, username, password);
-        String query = String.format("select * from %s", table);
-        SqlServerTableUnload.unload(conn, query, outFile);
-        conn.close();
+        String where = null;
+        if (args.length == 7) {
+            where = args[6];
+        }
+        SqlServerTableUnload unload = new SqlServerTableUnload(username, password, host, databaseName);
+        unload.unloadTable(table, where, outFile);
     }
 }

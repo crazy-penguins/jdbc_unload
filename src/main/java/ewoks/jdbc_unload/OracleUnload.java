@@ -5,11 +5,34 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
 public class OracleUnload extends Unload {
     static final String usage = "Unload [username] [password] [host]"
             + " [sid] [inFile] [outFile]";
+    String sid = null;
+
+    public OracleUnload(String username, String password, String host, String sid) {
+        this.username = username;
+        this.password = password;
+        this.host = host;
+        this.dbType = "oracle";
+    }
+
+    @Override
+    public String getConnectionString() {
+        return String.format("jdbc:oracle:thin:@%s:1521/%s", host, sid);
+    }
+
+    @Override
+    public Properties getProperties() {
+        Properties props = new Properties();
+        props.setProperty("user", username);
+        props.setProperty("password", password);
+        props.setProperty("oracle.jdbc.timezoneAsRegion", "false");
+        return props;
+    }
 
     public static void main(String[] args) throws Exception {
         // write your code here
@@ -24,16 +47,8 @@ public class OracleUnload extends Unload {
         String sid = args[3];
         String inFile = args[4];
         String outFile = args[5];
-        Class.forName("oracle.jdbc.driver.OracleDriver");
-        //step2 create  the connection object
-        String st = String.format("jdbc:oracle:thin:@%s:1521/%s", host, sid);
-        Properties props = new Properties();
-        props.setProperty("user", username);
-        props.setProperty("password", password);
-        props.setProperty("oracle.jdbc.timezoneAsRegion", "false");
-        Connection conn = DriverManager.getConnection(st, props);
-        String query = Files.readString(Path.of(inFile));
-        OracleUnload.unload(conn, query, outFile);
-        conn.close();
+        String query = Unload.fileContents(inFile);
+        OracleUnload unload = new OracleUnload(username, password, host, sid);
+        unload.unload(query, outFile);
     }
 }

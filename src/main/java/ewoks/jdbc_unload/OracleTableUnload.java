@@ -8,12 +8,16 @@ import java.util.HashMap;
 import java.util.Locale;
 
 
-public class OracleTableUnload extends Unload {
+public class OracleTableUnload extends OracleSchemaUnload {
     static final String usage = "OracleTableUnload [username] [password] [host]"
-            + " [sid] [table] [outFile]";
+            + " [sid] [table] [outFile] [where]";
 
-    public static String constructQuery(String schema, String table, ArrayList<ColumnInfo> columns) {
-        StringBuffer query = new StringBuffer("select ");
+    public OracleTableUnload(String username, String password, String host, String sid) {
+        super(username, password, host, sid);
+    }
+
+    public static String constructQuery(String schema, String table, ArrayList<ColumnInfo> columns, String where) {
+        StringBuilder query = new StringBuilder("select ");
         int n = 0;
         for (ColumnInfo x: columns) {
             n += 1;
@@ -21,34 +25,34 @@ public class OracleTableUnload extends Unload {
                 query.append("\n  , ");
             }
             switch (x.dataType) {
-                case "datetime":
+                case "datetime": {
                     query.append("to_char(cast(");
                     query.append(x.name);
                     query.append(" as timestamp) at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')");
-                    break;
-                case "timestamp(6)":
+                }
+                break;
+                case "timestamp(6)": {
                     query.append("to_char(");
                     query.append(x.name);
                     query.append(" at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')");
-                    break;
-                case "number":
+                }
+                break;
+                case "number": {
                     query.append("to_char(");
                     query.append(x.name);
                     query.append(", 'FM");
-                    for (int i = 0; i < x.digits - x.decimalPlaces - 1; ++i) {
-                        query.append('9');
-                    }
+                    query.append("9".repeat(x.digits - x.decimalPlaces - 1));
                     query.append("0");
                     if (x.decimalPlaces > 0) {
                         query.append('.');
-                        for (int i = 0; i < x.decimalPlaces; ++i) {
-                            query.append('0');
-                        }
+                        query.append("0".repeat(x.decimalPlaces));
                     }
                     query.append("')");
-                    break;
-                default:
+                }
+                break;
+                default: {
                     query.append(x.name);
+                }
             }
             query.append(" as \"");
             query.append(x.name);
@@ -60,13 +64,40 @@ public class OracleTableUnload extends Unload {
             query.append(".");
         }
         query.append(table.toLowerCase());
+        if (where != null) {
+            query.append('\n');
+            query.append(where);
+        }
         return query.toString();
+    }
+
+    @Override
+    public void unloadTable(String table, String where, String outFile) throws Exception {
+        String schema = null, query = null;
+        if (table.contains(".")) {
+            String[] pieces = table.split("\\.", 2);
+            schema = pieces[0];
+            table = pieces[1];
+        }
+        HashMap<String, ColumnInfo> columns = new HashMap<>();
+        ArrayList<ColumnInfo> rgColumns = new ArrayList<>();
+        try (Connection conn = getConnection()) {
+            try (ResultSet rs = conn.getMetaData().getColumns(null, schema, table, null)) {
+                while (rs.next()) {
+                    ColumnInfo x = new ColumnInfo(rs);
+                    columns.put(x.name, x);
+                    rgColumns.add(x);
+                }
+            }
+            query = OracleTableUnload.constructQuery(schema, table, rgColumns, where);
+            System.out.println(query);
+        }
     }
 
     public static void main(String[] args) throws Exception {
         // write your code here
         //step1 load the driver class
-        if (args.length < 6) {
+        if (args.length != 6 && args.length != 7) {
             System.out.println(OracleTableUnload.usage);
             System.exit(0);
         }
@@ -74,28 +105,13 @@ public class OracleTableUnload extends Unload {
         String password = args[1];
         String host = args[2];
         String sid = args[3];
-        String schema = null;
         String table = args[4].toUpperCase();
         String outFile = args[5];
-        if (table.indexOf('.') != -1) {
-            String[] pieces = table.split("\\.", 2);
-            schema = pieces[0];
-            table = pieces[1];
+        String where = null;
+        if (args.length == 7) {
+            where = args[6];
         }
-        Class.forName("oracle.jdbc.driver.OracleDriver");
-        //step2 create  the connection object
-        String st = String.format("jdbc:oracle:thin:@%s:1521/%s", host, sid);
-        Connection conn = DriverManager.getConnection(st, username, password);
-        ResultSet rs = conn.getMetaData().getColumns(null, schema, table, null);
-        HashMap<String, ColumnInfo> columns = new HashMap<String, ColumnInfo>();
-        ArrayList<ColumnInfo> rgColumns = new ArrayList<ColumnInfo>();
-        while (rs.next()) {
-            ColumnInfo x = new ColumnInfo(rs);
-            columns.put(x.name, x);
-            rgColumns.add(x);
-        }
-        String query = OracleTableUnload.constructQuery(schema, table, rgColumns);
-        System.out.println(query);
-        conn.close();
+        OracleTableUnload unload = new OracleTableUnload(username, password, host, sid);
+        unload.unloadTable(table, where, outFile);
     }
 }

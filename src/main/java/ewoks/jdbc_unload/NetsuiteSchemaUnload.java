@@ -1,13 +1,13 @@
 package ewoks.jdbc_unload;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-
-
 public class NetsuiteSchemaUnload extends NetsuiteUnload {
     static final String usage =
               "JDBC_UNLOAD_USERNAME=username JDBC_UNLOAD_PASSWORD=password"
             + "NetsuiteSchemaUnload [account] [roleId] table [outFile]";
+
+    public NetsuiteSchemaUnload(String username, String password, String account, String roleId) {
+        super(username, password, account, roleId);
+    }
 
     public static void main(String[] args) throws Exception {
         // write your code here
@@ -22,10 +22,7 @@ public class NetsuiteSchemaUnload extends NetsuiteUnload {
         String roleId = args[1];
         String table = args[2];
         String outFile = args[3];
-        try (Connection conn = NetsuiteSchemaUnload.connect(username, password, account, roleId)) {
-            try (ResultSet columns = conn.getMetaData().getColumns(null, null, table, null)) {
-                NetsuiteSchemaUnload.to_csv(columns, outFile);
-            }
-        }
+        NetsuiteSchemaUnload unload = new NetsuiteSchemaUnload(username, password, account, roleId);
+        unload.unloadSchema(table, outFile);
     }
 }

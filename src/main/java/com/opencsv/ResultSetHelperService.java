@@ -89,7 +89,7 @@ public class ResultSetHelperService implements Closeable {
                     value = "int";
                     break;
                 case Types.TIME:
-                    value = "date";
+                    value = "time";
                     break;
                 case Types.DATE:
                     value = "date";
@@ -292,6 +292,10 @@ public class ResultSetHelperService implements Closeable {
         return date == null ? null : dateFormat.format(date);
     }
 
+    protected String handleTime(Time t) {
+        return t.toString();
+    }
+
     protected String handleTimestamp(Timestamp timestamp, String timestampFormatString) {
         String result = null;
         if (timeFormat == null) {
@@ -349,8 +353,10 @@ public class ResultSetHelperService implements Closeable {
             case "BigDecimal":
                 return ((BigDecimal)o).toPlainString();
             case "date":
-            case "time":
                 str = handleDate((Date) o, dateFormatString);
+                break;
+            case "time":
+                str = handleTime((Time)o);
                 break;
             case "timestamp":
                 try {

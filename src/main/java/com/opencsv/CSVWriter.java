@@ -185,7 +185,7 @@ public class CSVWriter implements Closeable {
     }
 
     protected void writeLog(int rows) {
-        String msg = String.format("%s: %d rows extracted, total: %d rows, %.2f MB, %.3f secs on fetching.", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()), rows - incrRows, rows, (float) buffer.position / 1024 / 1024, resultService == null ? 0f : (float) resultService.cost / 1e9);
+        String msg = String.format("%s: %8d rows extracted, total: %8d rows, %10.2f MB, %8.3f secs on fetching.", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()), rows - incrRows, rows, (float) buffer.position / 1024 / 1024, resultService == null ? 0f : (float) resultService.cost / 1e9);
         logWriter.write(msg + "\n");
         logWriter.flush();
         System.out.println("    " + msg);
@@ -279,6 +279,7 @@ public class CSVWriter implements Closeable {
                 Object[] values;
                 while ((values = resultService.getColumnValues(true)) != null) writeNext(values);
             }
+            writeLog(totalRows);
             return totalRows;
         }
     }
